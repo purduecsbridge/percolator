@@ -1,0 +1,10 @@
+# Default ignored files
+.idea/*
+**/*.iml
+
+# macOS
+.DS_Store
+
+# Maven
+log/
+target/

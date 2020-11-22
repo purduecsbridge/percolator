@@ -1,0 +1,140 @@
+name: Deploy
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  check_version_bump:
+    runs-on: ubuntu-latest
+    outputs:
+      bumped: ${{ steps.check_bump.outputs.bumped }}
+
+    steps:
+      - name: Checkout current push
+        uses: actions/checkout@v2
+
+      - name: Setup JDK and Maven
+        uses: actions/setup-java@v1
+        with:
+          java-version: '>=11.0.0'
+
+      - name: Load Maven repository from cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Get current POM version
+        run: |
+          check_ver_cmd="mvn help:evaluate -Dexpression=project.version -q -DforceStdout"
+          curr_version=$($check_ver_cmd)
+          echo "curr_version=$curr_version" >> $GITHUB_ENV
+
+      - name: Checkout last commit
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.push.before }}
+
+      - name: Get last POM version
+        run: |
+          check_ver_cmd="mvn help:evaluate -Dexpression=project.version -q -DforceStdout"
+          last_version=$($check_ver_cmd)
+          echo "last_version=$last_version" >> $GITHUB_ENV
+
+      - name: Check for version bump
+        id: check_bump
+        run: |
+          if dpkg --compare-versions $curr_version "gt" $last_version; then
+              echo "::set-output name=bumped::true"
+          else
+              echo "::set-output name=bumped::false"
+          fi
+
+  package:
+    needs: check_version_bump
+    if: needs.check_version_bump.outputs.bumped == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup JDK and Maven
+        uses: actions/setup-java@v1
+        with:
+          java-version: '>=11.0.0'
+
+      - name: Load Maven repository from cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build
+        run: mvn package
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Deploy
+        run: mvn -B deploy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Get version number
+        run: |
+          check_ver_cmd="mvn help:evaluate -Dexpression=project.version -q -DforceStdout"
+          curr_version=$($check_ver_cmd)
+          echo "curr_version=$curr_version" >> $GITHUB_ENV
+
+      - name: Push tag for versioning
+        run: |
+          git fetch -q
+          git tag "v$curr_version" origin/main
+          git push origin "v$curr_version"
+
+  javadoc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Checkout pages
+        uses: actions/checkout@v2
+        with:
+          ref: 'gh-pages'
+          path: 'docs'
+
+      - name: Setup JDK and Maven
+        uses: actions/setup-java@v1
+        with:
+          java-version: '>=11.0.0'
+
+      - name: Get version number
+        run: |
+          check_ver_cmd="mvn help:evaluate -Dexpression=project.version -q -DforceStdout"
+          curr_version=$($check_ver_cmd)
+          echo "curr_version=$curr_version" >> $GITHUB_ENV
+
+      - name: Build Javadoc
+        run: mvn javadoc:javadoc
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Copy to latest directory
+        run: cp -r target/site/apidocs/ docs/api/latest/
+
+      - name: Copy to versioned directory
+        run: cp -r target/site/apidocs "docs/api/$curr_version/"
+
+      - name: Deploy changes
+        run: |
+          cd docs
+          repo="https://${{ github.token }}@github.com/${{ github.repository }}.git"
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git add -A
+          git commit -m "Deploy @ ${{ github.sha }}"
+          git push $repo gh-pages
