@@ -34,7 +34,7 @@ jobs:
       - name: Checkout last commit
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.push.before }}
+          ref: ${{ github.event.before }}
 
       - name: Get last POM version
         run: |
