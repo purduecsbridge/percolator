@@ -68,10 +68,10 @@ public class TestRunner {
 The [StyleChecker](https://purduecsbridge.github.io/percolator/api/latest/edu/purdue/cs/percolator/StyleChecker.html) audits the Java source files in a given directory and enforces the rules defined in a [Checkstyle configuration](https://checkstyle.org/config.html).
 
 ## Installation
-Instructions on how to add Percolator to your Maven project can be found [here](https://github.io/purduecsbridge/percolator/packages/).
+Instructions on how to add Percolator to your Maven project can be found [here](https://github.com/purduecsbridge/percolator/packages/).
 
 ## Contributing
-Pull requests/issues are always welcome.
+Pull requests and new issues are always welcome.
 
 ## License
 Licensed under the [MIT License](LICENSE).
