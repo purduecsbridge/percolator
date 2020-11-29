@@ -12,9 +12,6 @@ import org.junit.Test;
  */
 public class StringUtilitiesTest {
 
-    /**
-     * Tests the {@link StringUtilities#fuzzyEquals} method.
-     */
     @Test(timeout = 1000)
     public void fuzzyEquals_test() {
         final String s1 = "HeLlO\tWoRlD!!\n";
@@ -25,9 +22,34 @@ public class StringUtilitiesTest {
         Assert.assertFalse(StringUtilities.fuzzyEquals(s2, s3));
     }
 
-    /**
-     * Tests the {@link StringUtilities#normalizeLineEndings} method.
-     */
+    @Test(timeout = 1000)
+    public void assertFuzzyEquals_testPass() {
+        final String s1 = "Hello   !";
+        final String s2 = "Hello!";
+
+        try {
+            StringUtilities.assertFuzzyEquals(s1, s2);
+        } catch (AssertionError e) {
+            Assert.fail();
+        }
+    }
+
+    @Test(timeout = 1000)
+    public void assertFuzzyEquals_testFailWithMessage() {
+        final String s1 = "Hello";
+        final String s2 = "Goodbye";
+        final String message = "Make sure that your output matches.";
+
+        try {
+            StringUtilities.assertFuzzyEquals(message, s1, s2);
+        } catch (AssertionError e) {
+            Assert.assertTrue(e.getMessage().startsWith(message));
+            return;
+        }
+
+        Assert.fail("assertFuzzyEquals did not throw AssertionError.");
+    }
+
     @Test(timeout = 1000)
     public void normalizeLineEndings_test() {
         final String input = "Hello\r\nWorld";
@@ -37,9 +59,6 @@ public class StringUtilitiesTest {
         Assert.assertEquals(expected, actual);
     }
 
-    /**
-     * Tests the {@link StringUtilities#removeAllWhitespace} method.
-     */
     @Test(timeout = 1000)
     public void removeAllWhitespace_test() {
         final String input = "H\te\r\nl l\fo";
@@ -48,4 +67,5 @@ public class StringUtilitiesTest {
 
         Assert.assertEquals(expected, actual);
     }
+
 }

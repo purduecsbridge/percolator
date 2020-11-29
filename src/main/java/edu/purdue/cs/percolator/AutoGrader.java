@@ -41,7 +41,7 @@ public final class AutoGrader {
     private StyleChecker styleChecker;
 
     /**
-     * Private default constructor so no objects can be created of this type.
+     * Private default constructor so objects are created using the {@link AutoGrader#grade} method.
      */
     private AutoGrader() {
     }
