@@ -124,10 +124,12 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Copy to latest directory
-        run: cp -r target/site/apidocs/ docs/api/latest
+        run: cp -r target/site/apidocs/* docs/api/latest/
 
       - name: Copy to versioned directory
-        run: cp -r target/site/apidocs "docs/api/$curr_version/"
+        run: |
+          mkdir -p "docs/api/$curr_version"
+          cp -r target/site/apidocs/* "docs/api/$curr_version/"
 
       - name: Deploy changes
         run: |
