@@ -1,9 +1,7 @@
 package edu.purdue.cs.percolator;
 
 import com.github.tkutcher.jgrade.Grader;
-import com.github.tkutcher.jgrade.OutputFormatter;
 import com.github.tkutcher.jgrade.gradedtest.GradedTestResult;
-import com.github.tkutcher.jgrade.gradescope.GradescopeJsonFormatter;
 import org.junit.runner.JUnitCore;
 
 import java.util.Arrays;
@@ -11,7 +9,7 @@ import java.util.Objects;
 
 /**
  * The {@link AutoGrader} class contains builder methods to create an auto-grader for a grading
- * platform. {@link AutoGrader} currently only supports Gradescope.
+ * platform.
  *
  * @author Andrew Davis, asd@alumni.purdue.edu
  * @version 1.2
@@ -95,21 +93,34 @@ public final class AutoGrader {
 
     /**
      * Specifies the grading platform to be Gradescope.
-     * Grading output will be formatted as Gradescope-compliant JSON.
+     * Grading output will be saved at {@code /autograder/results/results.json}.
      *
      * @return the {@link AutoGrader} with the new platform setting
      */
     public AutoGrader onGradescope() {
-        if (!(this.formatter instanceof GradescopeJsonFormatter)) {
-            GradescopeJsonFormatter formatter = new GradescopeJsonFormatter();
-            formatter.setPrettyPrint(2);
-            this.formatter = formatter;
+        if (!(this.formatter instanceof GradescopeFormatter)) {
+            this.formatter = new GradescopeFormatter();
         }
         return this;
     }
 
     /**
-     * Runs the grader and outputs the results to System.out.
+     * Specifies the grading platform to be Vocareum.
+     * Grading results will be saved to {@code $vocareumGradeFile} and
+     * grading output will be saved to {@code $vocareumReportFile}.
+     *
+     * @return the {@link AutoGrader} with the new platform setting
+     */
+    public AutoGrader onVocareum() {
+        if (!(this.formatter instanceof VocareumFormatter)) {
+            this.formatter = new VocareumFormatter();
+        }
+        return this;
+    }
+
+    /**
+     * Runs the grader and outputs the results to the location
+     * the grading platform will expect.
      */
     public void run() {
         Grader grader = new Grader();
@@ -129,7 +140,7 @@ public final class AutoGrader {
             runStyleChecker(grader);
         }
 
-        System.out.println(formatter.format(grader));
+        formatter.saveGradingResults(grader);
     }
 
     /**
