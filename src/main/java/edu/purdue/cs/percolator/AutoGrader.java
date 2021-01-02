@@ -14,7 +14,7 @@ import java.util.Objects;
  * platform. {@link AutoGrader} currently only supports Gradescope.
  *
  * @author Andrew Davis, asd@alumni.purdue.edu
- * @version 1.0
+ * @version 1.2
  * @since 1.0
  */
 public final class AutoGrader {
@@ -33,7 +33,6 @@ public final class AutoGrader {
      * The formatter used to output the grading report.
      */
     private OutputFormatter formatter;
-
 
     /**
      * The optional code style checker that will run after grading.
@@ -60,9 +59,8 @@ public final class AutoGrader {
 
         AutoGrader grader = new AutoGrader();
         grader.testSuites = testSuites;
-        grader.maxScore = 100;
-        grader.formatter = new GradescopeJsonFormatter();
-        ((GradescopeJsonFormatter)grader.formatter).setPrettyPrint(2);
+        grader.withMaxScore(100);
+        grader.onGradescope();
         grader.styleChecker = null;
 
         return grader;

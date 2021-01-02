@@ -6,7 +6,7 @@
 
   <groupId>edu.purdue.cs</groupId>
   <artifactId>percolator</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
 
   <name>Percolator</name>
   <description>Grading framework for Java assignments.</description>

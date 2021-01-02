@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * <a href="https://checkstyle.sourceforge.io">Checkstyle</a> to audit code style.
  *
  * @author Andrew Davis, asd@alumni.purdue.edu
- * @version 1.0
+ * @version 1.2
  * @since 1.0
  */
 public final class StyleChecker {
@@ -103,8 +103,8 @@ public final class StyleChecker {
         StyleChecker checker = new StyleChecker();
         checker.directory = dir.getAbsolutePath();
         checker.files = files;
-        checker.maxScore = 0;
-        checker.deduction = 0;
+        checker.withMaxScore(0);
+        checker.withDeduction(0);
 
         try {
             checker.configuration = ConfigurationLoader.loadConfiguration(
