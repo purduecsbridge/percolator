@@ -131,7 +131,6 @@ class TestCaseListener extends RunListener {
             if (this.testResults.containsKey(testKey)) {
                 GradedTestResult result = this.testResults.get(testKey);
                 result.setScore(0);
-                result.addOutput("TEST FAILED:\n");
 
                 if (failure.getMessage() != null) {
                     result.addOutput(failure.getMessage());

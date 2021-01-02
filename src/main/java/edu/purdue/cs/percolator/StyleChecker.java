@@ -12,12 +12,15 @@ import com.puppycrawl.tools.checkstyle.api.Configuration;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
 
 /**
  * The {@link StyleChecker} class contains builder methods to create a code style checker
@@ -25,7 +28,7 @@ import java.util.stream.Collectors;
  * <a href="https://checkstyle.sourceforge.io">Checkstyle</a> to audit code style.
  *
  * @author Andrew Davis, asd@alumni.purdue.edu
- * @version 1.0
+ * @version 1.2
  * @since 1.0
  */
 public final class StyleChecker {
@@ -33,7 +36,7 @@ public final class StyleChecker {
     /**
      * The {@link GradedTestResult} name for style check.
      */
-    private final static String TEST_RESULT_NAME = "Code Style";
+    final static String TEST_RESULT_NAME = "Code Style";
 
     /**
      * The {@link GradedTestResult} output message when the style checker fails unexpectedly.
@@ -88,27 +91,39 @@ public final class StyleChecker {
             throw new IllegalArgumentException("directory parameter must specify a valid directory that is readable.");
         }
 
-        BiPredicate<Path, BasicFileAttributes> javaFilePredicate = (path, attr) ->
-            attr.isRegularFile() && path.toString().endsWith(".java");
-
-        List<File> files;
-        try {
-            files = Files.find(dir.toPath(), Integer.MAX_VALUE, javaFilePredicate)
-                .map(Path::toFile)
-                .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new RuntimeException(String.format("Could not obtain list of .java files in %s.", directory));
-        }
-
         StyleChecker checker = new StyleChecker();
         checker.directory = dir.getAbsolutePath();
-        checker.files = files;
-        checker.maxScore = 0;
-        checker.deduction = 0;
+        checker.files = new ArrayList<>();
+        checker.withMaxScore(0);
+        checker.withDeduction(0);
+
+        try {
+            Files.walkFileTree(dir.toPath(), new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
+                    if (attrs.isRegularFile() && path.toString().endsWith(".java")) {
+                        checker.files.add(path.toFile());
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path path, IOException exc) throws IOException {
+                    if (exc instanceof AccessDeniedException) {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    } else {
+                        return super.visitFileFailed(path, exc);
+                    }
+                }
+            });
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
 
         try {
             checker.configuration = ConfigurationLoader.loadConfiguration(
-                policyFile, new PropertiesExpander(System.getProperties()));
+                policyFile, new PropertiesExpander(System.getProperties())
+            );
         } catch (CheckstyleException e) {
             throw new RuntimeException(e);
         }
@@ -154,7 +169,7 @@ public final class StyleChecker {
         checker.setBasedir(directory);
         checker.setModuleClassLoader(Checker.class.getClassLoader());
 
-        int numErrors = 0;
+        int numErrors;
         try {
             checker.configure(configuration);
             numErrors = checker.process(files);
@@ -169,6 +184,25 @@ public final class StyleChecker {
         result.setScore(Math.max(result.getPoints() - (this.deduction * numErrors), 0));
         result.addOutput(linterOutput.toString());
         return result;
+    }
+
+    /**
+     * Runs the style checker and prints the results.
+     * Can be used via the command line directly rather than creating an {@link AutoGrader}.
+     * Takes two command line arguments: 1. the path of the directory to audit for code style
+     * and 2. the path of the checkstyle configuration file, in that order.
+     *
+     * @param args the directory to audit followed by the checkstyle configuration file
+     */
+    public static void main(String[] args) {
+        if (args.length != 2) {
+            throw new IllegalArgumentException("StyleChecker takes two arguments: " +
+                "(directory_to_audit, checkstyle_configuration_file)."
+            );
+        }
+        StyleChecker checker = StyleChecker.lint(args[0], args[1]);
+        GradedTestResult result = checker.grade();
+        System.out.println(result.getOutput());
     }
 
 }

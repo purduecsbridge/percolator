@@ -39,27 +39,29 @@ public final class StringUtilities {
      * Asserts that two {@link String}s are "fuzzy-equal"
      * (i.e., ignoring all whitespace and capitalization).
      *
-     * @param message the assertion message to display
-     * @param s1      the first {@link String}
-     * @param s2      the second {@link String}
+     * @param message  the assertion message to display
+     * @param expected the expected {@link String}
+     * @param actual   the actual {@link String}
      * @throws AssertionError if the {@link String}s are not "fuzzy-equal"
      */
-    public static void assertFuzzyEquals(String message, String s1, String s2) throws AssertionError {
-        s1 = removeAllWhitespace(s1).toLowerCase();
-        s2 = removeAllWhitespace(s2).toLowerCase();
-        Assert.assertEquals(message, s1, s2);
+    public static void assertFuzzyEquals(String message, String expected, String actual) throws AssertionError {
+        String s1 = removeAllWhitespace(expected).toLowerCase();
+        String s2 = removeAllWhitespace(actual).toLowerCase();
+        if (!s1.equals(s2)) {
+            Assert.assertEquals(message, expected, actual);
+        }
     }
 
     /**
      * Asserts that two {@link String}s are "fuzzy-equal"
      * (i.e., ignoring all whitespace and capitalization).
      *
-     * @param s1 the first {@link String}
-     * @param s2 the second {@link String}
+     * @param expected the expected {@link String}
+     * @param actual   the actual {@link String}
      * @throws AssertionError if the {@link String}s are not "fuzzy-equal"
      */
-    public static void assertFuzzyEquals(String s1, String s2) throws AssertionError {
-        assertFuzzyEquals(null, s1, s2);
+    public static void assertFuzzyEquals(String expected, String actual) throws AssertionError {
+        assertFuzzyEquals(null, expected, actual);
     }
 
     /**

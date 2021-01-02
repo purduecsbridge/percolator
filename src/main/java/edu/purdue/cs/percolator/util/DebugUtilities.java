@@ -44,7 +44,8 @@ public final class DebugUtilities {
     public static void failWithStackTrace(Throwable e) {
         ByteArrayOutputStream error = new ByteArrayOutputStream();
         e.printStackTrace(new PrintStream(error));
-        Assert.fail(error.toString());
+        String failureMessage = String.format("Unexpected Exception during execution: %n%s", error.toString());
+        Assert.fail(failureMessage);
     }
 
 }

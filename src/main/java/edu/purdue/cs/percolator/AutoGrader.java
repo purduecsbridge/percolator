@@ -1,20 +1,17 @@
 package edu.purdue.cs.percolator;
 
 import com.github.tkutcher.jgrade.Grader;
-import com.github.tkutcher.jgrade.OutputFormatter;
 import com.github.tkutcher.jgrade.gradedtest.GradedTestResult;
-import com.github.tkutcher.jgrade.gradescope.GradescopeJsonFormatter;
 import org.junit.runner.JUnitCore;
 
 import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * The {@link AutoGrader} class contains builder methods to create an auto-grader for a grading
- * platform. {@link AutoGrader} currently only supports Gradescope.
+ * The {@link AutoGrader} class contains builder methods to create an auto-grader.
  *
  * @author Andrew Davis, asd@alumni.purdue.edu
- * @version 1.0
+ * @version 1.2
  * @since 1.0
  */
 public final class AutoGrader {
@@ -30,10 +27,9 @@ public final class AutoGrader {
     private double maxScore;
 
     /**
-     * The formatter used to output the grading report.
+     * The formatter used to output the grading results.
      */
     private OutputFormatter formatter;
-
 
     /**
      * The optional code style checker that will run after grading.
@@ -60,9 +56,8 @@ public final class AutoGrader {
 
         AutoGrader grader = new AutoGrader();
         grader.testSuites = testSuites;
-        grader.maxScore = 100;
-        grader.formatter = new GradescopeJsonFormatter();
-        ((GradescopeJsonFormatter)grader.formatter).setPrettyPrint(2);
+        grader.withMaxScore(100);
+        grader.onGradescope();
         grader.styleChecker = null;
 
         return grader;
@@ -97,41 +92,61 @@ public final class AutoGrader {
 
     /**
      * Specifies the grading platform to be Gradescope.
-     * Grading output will be formatted as Gradescope-compliant JSON.
      *
      * @return the {@link AutoGrader} with the new platform setting
      */
     public AutoGrader onGradescope() {
-        if (!(this.formatter instanceof GradescopeJsonFormatter)) {
-            GradescopeJsonFormatter formatter = new GradescopeJsonFormatter();
-            formatter.setPrettyPrint(2);
-            this.formatter = formatter;
+        if (!(this.formatter instanceof GradescopeFormatter)) {
+            this.formatter = new GradescopeFormatter();
         }
         return this;
     }
 
     /**
-     * Runs the grader and outputs the results to System.out.
+     * Specifies the grading platform to be Vocareum.
+     *
+     * When setting up an assignment in Vocareum, the rubric items
+     * should be named "Test Cases" and "Code Style". You can
+     * omit "Code Style" if you are not using a {@link StyleChecker}.
+     *
+     * In order to distinguish between the grading report and the
+     * grading rubric results, the grading report is printed to
+     * standard error, and the grading results are printed to
+     * standard out. When writing your grading script, it is recommended
+     * that you redirect output using the following sequence:
+     * {@code 2>&1 1> $vocareumGradeFile}.
+     *
+     * @return the {@link AutoGrader} with the new platform setting
+     */
+    public AutoGrader onVocareum() {
+        if (!(this.formatter instanceof VocareumFormatter)) {
+            this.formatter = new VocareumFormatter();
+        }
+        return this;
+    }
+
+    /**
+     * Runs the grader and prints out the results.
      */
     public void run() {
         Grader grader = new Grader();
-        grader.setMaxScore(maxScore);
-        TestCaseListener listener = new TestCaseListener(maxScore);
+        grader.setMaxScore(this.maxScore);
+        TestCaseListener listener = new TestCaseListener(this.maxScore);
 
         JUnitCore runner = new JUnitCore();
         runner.addListener(listener);
 
         grader.startTimer();
-        runner.run(testSuites);
+        runner.run(this.testSuites);
         grader.stopTimer();
 
         listener.getTestResults().forEach(grader::addGradedTestResult);
 
-        if (styleChecker != null) {
+        if (this.styleChecker != null) {
             runStyleChecker(grader);
         }
 
-        System.out.println(formatter.format(grader));
+        formatter.printGradingResults(grader);
     }
 
     /**
@@ -140,7 +155,7 @@ public final class AutoGrader {
      * @param grader the grader where the result will be added
      */
     private void runStyleChecker(Grader grader) {
-        GradedTestResult result = styleChecker.grade();
+        GradedTestResult result = this.styleChecker.grade();
         grader.addGradedTestResult(result);
     }
 
