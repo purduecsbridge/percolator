@@ -6,10 +6,10 @@
 
   <groupId>edu.purdue.cs</groupId>
   <artifactId>percolator</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
 
   <name>Percolator</name>
-  <description>Grading framework for Java assignments.</description>
+  <description>Grading framework for Java programming assignments.</description>
   <url>https://github.com/purduecsbridge/percolator</url>
   <inceptionYear>2020</inceptionYear>
   <organization>
