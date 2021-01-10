@@ -82,6 +82,7 @@ public class TestRunner {
     }
 
 }
+```
 
 ## Installation
 Instructions on how to add Percolator to your Maven project can be found [here](https://github.com/purduecsbridge/percolator/packages/).
