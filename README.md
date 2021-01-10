@@ -27,7 +27,7 @@ public class HelloWorldTests {
 }
 ```
 
-That's a test suite written using Percolator. Pretty simple, right? Call the `AutoGrader.run()` method to run your test suites and automatically print the results in JSON for Gradescope.
+That's a test suite written using Percolator. Pretty simple, right? Call the `AutoGrader.run()` method to run your test suites and automatically save the results for the grading platform.
 
 ```java
 import edu.purdue.cs.percolator.AutoGrader;
