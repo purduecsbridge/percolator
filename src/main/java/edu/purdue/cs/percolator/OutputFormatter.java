@@ -13,6 +13,14 @@ import com.github.tkutcher.jgrade.Grader;
 interface OutputFormatter {
 
     /**
+     * Prints the contents of the {@link Grader} object
+     * to standard out in a format that grading platform can understand.
+     *
+     * @param grader the test case grader
+     */
+    void printGradingResults(Grader grader);
+
+    /**
      * Saves the contents of the {@link Grader} object
      * to a format that the grading platform can understand.
      *

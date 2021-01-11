@@ -41,12 +41,36 @@ class GradescopeFormatter implements OutputFormatter {
      * @param grader the test case grader
      */
     public void saveGradingResults(Grader grader) {
-        String output = this.formatter.format(grader);
         try (PrintWriter writer = new PrintWriter(RESULTS_FILE)) {
-            writer.write(output);
+            this.printGradingResults(grader, writer);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Prints the contents of the {@link Grader} object
+     * to standard out.
+     *
+     * @param grader the test case grader
+     */
+    public void printGradingResults(Grader grader) {
+        try (PrintWriter writer = new PrintWriter(System.out)) {
+            this.printGradingResults(grader, writer);
+        }
+    }
+
+    /**
+     * Prints the contents of the {@link Grader} object
+     * to the specified writer.
+     *
+     * @param grader the test case grader
+     * @param writer the writer used to write results
+     */
+    private void printGradingResults(Grader grader, PrintWriter writer) {
+        String output = this.formatter.format(grader);
+        writer.write(output);
+        writer.close();
     }
 
 }

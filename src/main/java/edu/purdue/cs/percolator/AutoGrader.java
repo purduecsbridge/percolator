@@ -38,6 +38,12 @@ public final class AutoGrader {
     private StyleChecker styleChecker;
 
     /**
+     * Boolean flag that determines if grading results should be
+     * auto-saved to the proper location on disk.
+     */
+    private boolean autoSavesResults;
+
+    /**
      * Private default constructor so objects are created using the {@link AutoGrader#grade} method.
      */
     private AutoGrader() {
@@ -119,28 +125,43 @@ public final class AutoGrader {
     }
 
     /**
+     * Specifies that the {@link AutoGrader} should automatically save the
+     * grading results to disk after running.
+     *
+     * @return the {@link AutoGrader} with the new auto-save setting
+     */
+    public AutoGrader autoSaveResults() {
+        this.autoSavesResults = true;
+        return this;
+    }
+
+    /**
      * Runs the grader and outputs the results to the location
      * the grading platform will expect.
      */
     public void run() {
         Grader grader = new Grader();
-        grader.setMaxScore(maxScore);
-        TestCaseListener listener = new TestCaseListener(maxScore);
+        grader.setMaxScore(this.maxScore);
+        TestCaseListener listener = new TestCaseListener(this.maxScore);
 
         JUnitCore runner = new JUnitCore();
         runner.addListener(listener);
 
         grader.startTimer();
-        runner.run(testSuites);
+        runner.run(this.testSuites);
         grader.stopTimer();
 
         listener.getTestResults().forEach(grader::addGradedTestResult);
 
-        if (styleChecker != null) {
+        if (this.styleChecker != null) {
             runStyleChecker(grader);
         }
 
-        formatter.saveGradingResults(grader);
+        if (this.autoSavesResults) {
+            formatter.saveGradingResults(grader);
+        } else {
+            formatter.printGradingResults(grader);
+        }
     }
 
     /**
@@ -149,7 +170,7 @@ public final class AutoGrader {
      * @param grader the grader where the result will be added
      */
     private void runStyleChecker(Grader grader) {
-        GradedTestResult result = styleChecker.grade();
+        GradedTestResult result = this.styleChecker.grade();
         grader.addGradedTestResult(result);
     }
 
