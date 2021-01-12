@@ -27,7 +27,7 @@ public class HelloWorldTests {
 }
 ```
 
-That's a test suite written using Percolator. Pretty simple, right? Call the `AutoGrader.run()` method to run your test suites and automatically save the results for the grading platform.
+That's a test suite written using Percolator. Pretty simple, right? Call the `AutoGrader.run()` method to run your test suites and automatically print the results in JSON for Gradescope.
 
 ```java
 import edu.purdue.cs.percolator.AutoGrader;
@@ -67,7 +67,7 @@ public class TestRunner {
 
 The [StyleChecker](https://purduecsbridge.github.io/percolator/api/latest/edu/purdue/cs/percolator/StyleChecker.html) audits the Java source files in a given directory and enforces the rules defined in a [Checkstyle configuration](https://checkstyle.org/config.html).
 
-By default, the [AutoGrader](https://purduecsbridge.github.com/percolator/api/latest/edu/purdue/cs/percolator/AutoGrader.html) will assume you are using Gradescope. If you are using Vocareum instead, just use the `withVocareum()` method when constructing your AutoGrader.
+By default, the [AutoGrader](https://purduecsbridge.github.com/percolator/api/latest/edu/purdue/cs/percolator/AutoGrader.html) will assume you are using Gradescope. If you are using Vocareum instead, just use the `onVocareum()` method when constructing your AutoGrader.
 
 ```java
 import edu.purdue.cs.percolator.AutoGrader;
@@ -78,6 +78,24 @@ public class TestRunner {
         String[] testSuites = {TestSuiteOne.class, TestSuiteTwo.class};
         AutoGrader.grade(testSuites)
                 .onVocareum()
+                .run();
+    }
+
+}
+```
+
+By default, after calling `run()`, the `AutoGrader` will print out the results to the console. If you'd rather have the grader automatically save the results to the proper location on disk, use the `autoSaveResults()` method (this is recommended for both Gradescope and Vocareum).
+
+```java
+import edu.purdue.cs.percolator.AutoGrader;
+
+public class TestRunner {
+
+    public static void main(String[] args) {
+        String[] testSuites = {TestSuiteOne.class, TestSuiteTwo.class};
+        AutoGrader.grade(testSuites)
+                .onGradescope()
+                .autoSaveResults()
                 .run();
     }
 
