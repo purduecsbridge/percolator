@@ -10,7 +10,7 @@ import java.util.List;
 
 class VocareumFormatter implements OutputFormatter {
 
-    public static final String OUT_FILE_NAME = "GRADED_OUT";
+    public static final String OUT_FILE_NAME = "$vocareumGradeFile";
 
     //rubric name, number,
     @Override
