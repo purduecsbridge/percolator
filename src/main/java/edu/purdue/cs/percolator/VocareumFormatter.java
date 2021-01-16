@@ -76,12 +76,11 @@ class VocareumFormatter implements OutputFormatter {
      * @param gtr the {@code GradedTestResult} to print output for
      * @return A formatted {@code String} detailing the test pass/fail message.
      */
-    private String formatGradedItem(GradedTestResult gtr) {
+    private static String formatGradedItem(GradedTestResult gtr) {
         if (gtr.passed()) {
             return gtr.getName() + ": TEST PASSED!";
         } else {
-            return gtr.getName() + ": " + gtr.getScore() + " / " +
-                gtr.getPoints() + "TEST FAILED. See result below.";
+            return String.format("%s:%f/%f", gtr.getName(), gtr.getScore(), gtr.getPoints());
         }
     }
 
