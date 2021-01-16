@@ -97,6 +97,11 @@ class VocareumFormatter implements OutputFormatter {
         return (int) gList.stream().filter(r -> !r.passed()).count() != 0;
     }
 
+    /**
+     * Get the code style score given a list of {@code GradedTestResult}.
+     * @param results the {@code List<GradedTestResults>} obtained from the grader.
+     * @return a {@code GradedTestResult} representing the code style score, if found, or null otherwise.
+     */
     private GradedTestResult getCodeStyleScore(List<GradedTestResult> results) {
         GradedTestResult codeStyle = null;
         if (results.get(results.size() - 1).getName().equals(StyleChecker.TEST_RESULT_NAME)) {
