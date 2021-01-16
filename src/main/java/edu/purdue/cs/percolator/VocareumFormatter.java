@@ -22,28 +22,26 @@ class VocareumFormatter implements OutputFormatter {
      */
     public static final String OUT_FILE_NAME = "$vocareumGradeFile";
 
+    private static final String FAILURE_HEADER = "TESTS FAILED! SEE BELOW FOR REPORT\n" +
+        "===========================================";
+
 
     /**
      * Print the grading report to standard output.
      *
      * @param grader the test case grader
      */
-    @Override
     public void printGradingResults(Grader grader) {
-        List<GradedTestResult> gradedRes = grader.getGradedTestResults();
-        int numTestsFailed = (int) gradedRes.stream().filter(r -> !r.passed()).count();
-        if (numTestsFailed == 0) {
-            System.out.println("ALL TESTS PASSED!");
-            return;
-        }
-
-        System.out.println(displayFailureHeader());
-        gradedRes.forEach(res -> {
-                if (!res.passed()) {
-                    System.out.println(formatGradedItem(res));
+        List<GradedTestResult> results = grader.getGradedTestResults();
+        if (didFailNonzeroTests(results)) {
+            System.out.println(VocareumFormatter.FAILURE_HEADER);
+            results.forEach(res -> {
+                    if (!res.passed()) {
+                        System.out.println(formatGradedItem(res));
+                    }
                 }
-            }
-        );
+            );
+        }
     }
 
     /**
@@ -52,25 +50,22 @@ class VocareumFormatter implements OutputFormatter {
      * @param grader the test case grader
      */
     public void saveGradingResults(Grader grader) {
-        List<GradedTestResult> gradedRes = grader.getGradedTestResults();
-        int numTestsFailed = (int) gradedRes.stream().filter(r -> !r.passed()).count();
-        if (numTestsFailed == 0) {
-            //all tests passed, no need to create writer resource and take up mem, exit out
-            return;
-        }
+        List<GradedTestResult> results = grader.getGradedTestResults();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(displayFailureHeader());
-        gradedRes.forEach(res -> {
-            if (!res.passed()) {
-                sb.append(formatGradedItem(res)).append("\n");
+        if (didFailNonzeroTests(results)) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(VocareumFormatter.FAILURE_HEADER);
+            results.forEach(res -> {
+                if (!res.passed()) {
+                    sb.append(formatGradedItem(res)).append("\n");
+                }
+            });
+
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(OUT_FILE_NAME))) {
+                bw.write(sb.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
-
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(OUT_FILE_NAME))) {
-            bw.write(sb.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
     }
@@ -91,13 +86,14 @@ class VocareumFormatter implements OutputFormatter {
     }
 
     /**
-     * Returns a {@code String} for when the failure message is displayed.
+     * Returns a boolean indicative of if the {@code List<GradedTestResults>} had 1 or more
+     * tests that failed.
      *
-     * @return Returns the header of the failure state message.
+     * @param gList the {@code List<GradedTestResults>} received from the {@code Grader} object.
+     * @return true if there are more than 0 tests that failed, false otherwise.
      */
-    private String displayFailureHeader() {
-        return "TESTS FAILED! SEE BELOW FOR REPORT" +
-            "===========================================";
+    private boolean didFailNonzeroTests(List<GradedTestResult> gList) {
+        return (int) gList.stream().filter(r -> !r.passed()).count() != 0;
     }
 
 }
