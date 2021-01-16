@@ -42,6 +42,9 @@ class VocareumFormatter implements OutputFormatter {
                 }
             );
         }
+
+        System.out.printf("Test Cases, %f%n\n", grader.getScore());
+        System.out.printf("Code Style, %f%n\n", getCodeStyleScore(results).getScore());
     }
 
     /**
@@ -60,6 +63,9 @@ class VocareumFormatter implements OutputFormatter {
                     sb.append(formatGradedItem(res)).append("\n");
                 }
             });
+
+            sb.append(String.format("Test Cases, %f\n", grader.getScore()));
+            sb.append(String.format("Code Style, %f%n\n", getCodeStyleScore(results).getScore()));
 
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(OUT_FILE_NAME))) {
                 bw.write(sb.toString());
@@ -89,6 +95,17 @@ class VocareumFormatter implements OutputFormatter {
      */
     private boolean didFailNonzeroTests(List<GradedTestResult> gList) {
         return (int) gList.stream().filter(r -> !r.passed()).count() != 0;
+    }
+
+    private GradedTestResult getCodeStyleScore(List<GradedTestResult> results) {
+        GradedTestResult codeStyle = null;
+        if (results.get(results.size() - 1).getName().equals(StyleChecker.TEST_RESULT_NAME)) {
+            GradedTestResult result = results.get(results.size() - 1);
+            codeStyle = result;
+            results.remove(result);
+        }
+
+        return codeStyle;
     }
 
 }

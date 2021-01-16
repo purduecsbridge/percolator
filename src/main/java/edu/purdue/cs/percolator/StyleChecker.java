@@ -33,7 +33,7 @@ public final class StyleChecker {
     /**
      * The {@link GradedTestResult} name for style check.
      */
-    private final static String TEST_RESULT_NAME = "Code Style";
+    final static String TEST_RESULT_NAME = "Code Style";
 
     /**
      * The {@link GradedTestResult} output message when the style checker fails unexpectedly.
@@ -154,7 +154,7 @@ public final class StyleChecker {
         checker.setBasedir(directory);
         checker.setModuleClassLoader(Checker.class.getClassLoader());
 
-        int numErrors = 0;
+        int numErrors;
         try {
             checker.configure(configuration);
             numErrors = checker.process(files);
