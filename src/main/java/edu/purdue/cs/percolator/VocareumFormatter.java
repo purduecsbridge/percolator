@@ -54,24 +54,26 @@ class VocareumFormatter implements OutputFormatter {
      */
     public void saveGradingResults(Grader grader) {
         List<GradedTestResult> results = grader.getGradedTestResults();
+        StringBuilder sb = new StringBuilder();
 
         if (didFailNonzeroTests(results)) {
-            StringBuilder sb = new StringBuilder();
             sb.append(VocareumFormatter.FAILURE_HEADER);
             results.forEach(res -> {
                 if (!res.passed()) {
                     sb.append(formatGradedItem(res)).append("\n");
                 }
             });
+        } else {
+            sb.append("ALL TESTS PASSED!\n");
+        }
 
-            sb.append(String.format("Test Cases, %f\n", grader.getScore()));
-            sb.append(String.format("Code Style, %f%n\n", getCodeStyleScore(results).getScore()));
+        sb.append(String.format("Test Cases, %f\n", grader.getScore()));
+        sb.append(String.format("Code Style, %f%n\n", getCodeStyleScore(results).getScore()));
 
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(System.getenv(REPORT_FILE)))) {
-                bw.write(sb.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(System.getenv(REPORT_FILE)))) {
+            bw.write(sb.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }
