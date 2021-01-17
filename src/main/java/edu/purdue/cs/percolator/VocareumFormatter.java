@@ -20,9 +20,9 @@ class VocareumFormatter implements OutputFormatter {
     /**
      * The filename used by Vocareum for outputting grade information to.
      */
-    private static final String REPORT_FILE = "$vocareumGradeFile";
+    private final static String REPORT_FILE = "$vocareumGradeFile";
 
-    private static final String FAILURE_HEADER = "TESTS FAILED! SEE BELOW FOR REPORT\n" +
+    private final static String FAILURE_HEADER = "TESTS FAILED! SEE BELOW FOR REPORT\n" +
         "===========================================";
 
 
