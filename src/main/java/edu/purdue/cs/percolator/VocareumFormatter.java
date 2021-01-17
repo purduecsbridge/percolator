@@ -38,8 +38,9 @@ class VocareumFormatter implements OutputFormatter {
     public void printGradingResults(Grader grader) {
         List<GradedTestResult> results = grader.getGradedTestResults();
         if (didFailNonzeroTests(results, 1, Optional.empty())) {
-            results.removeIf(GradedTestResult::passed);
             results.forEach(res -> System.out.println(formatGradedItem(res)));
+        } else {
+            System.out.println("ALL TESTS PASSED!");
         }
 
         System.out.printf("Test Cases, %f%n\n", grader.getScore());
@@ -54,13 +55,8 @@ class VocareumFormatter implements OutputFormatter {
     public void saveGradingResults(Grader grader) {
         List<GradedTestResult> results = grader.getGradedTestResults();
         StringBuilder sb = new StringBuilder();
-
         if (didFailNonzeroTests(results, 2, Optional.of(sb))) {
-            results.forEach(res -> {
-                if (!res.passed()) {
-                    sb.append(formatGradedItem(res)).append("\n");
-                }
-            });
+            results.forEach(res -> sb.append(formatGradedItem(res)).append("\n"));
         } else {
             sb.append("ALL TESTS PASSED!\n");
         }
@@ -105,7 +101,7 @@ class VocareumFormatter implements OutputFormatter {
         } else if (outputType == 2 && result && stringBuilder.isPresent()) {
             stringBuilder.get().append(VocareumFormatter.FAILURE_HEADER);
         }
-
+        resultList.removeIf(GradedTestResult::passed);
         return result;
     }
 
