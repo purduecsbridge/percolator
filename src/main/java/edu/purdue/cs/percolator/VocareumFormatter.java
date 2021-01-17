@@ -7,7 +7,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * The {@link VocareumFormatter} class saves the grading results
@@ -22,11 +21,27 @@ class VocareumFormatter implements OutputFormatter {
     /**
      * The filename used by Vocareum for outputting grade information to.
      */
-    private final static String REPORT_FILE = "$vocareumGradeFile";
-
+    private final static String GRADE_FILE = "$vocareumGradeFile";
+    /**
+     * The filename used by Vocareum for outputting report information to.
+     */
+    private final static String REPORT_FILE = "$vocareumReportFile";
+    /**
+     * The header displayed if 1 or more test cases failed.
+     */
     private final static String FAILURE_HEADER = "TESTS FAILED! SEE BELOW FOR REPORT\n" +
         "===========================================";
+    /**
+     * The string builder used throughout the process of printing test results.
+     */
+    private final StringBuilder stringBuilder;
 
+    /**
+     * A constructor used for creating a {@code VocareumFormatter} object.
+     */
+    public VocareumFormatter() {
+        this.stringBuilder = new StringBuilder();
+    }
 
     /**
      * Prints the grading output from the {@link Grader} object
@@ -37,14 +52,16 @@ class VocareumFormatter implements OutputFormatter {
      */
     public void printGradingResults(Grader grader) {
         List<GradedTestResult> results = grader.getGradedTestResults();
-        if (didFailNonzeroTests(results, 1, Optional.empty())) {
-            results.forEach(res -> System.out.println(formatGradedItem(res)));
+        if (didFailNonzeroTests(results, stringBuilder)) {
+            results.forEach(res -> stringBuilder.append(formatGradedItem(res)));
         } else {
-            System.out.println("ALL TESTS PASSED!");
+            stringBuilder.append("ALL TESTS PASSED!");
         }
 
-        System.out.printf("Test Cases, %f%n\n", grader.getScore());
-        System.out.printf("Code Style, %f%n\n", getCodeStyleScore(results).getScore());
+        stringBuilder.append(String.format("Test Cases, %f%n\n", grader.getScore()));
+        stringBuilder.append(String.format("Code Style, %f%n\n", getCodeStyleScore(results).getScore()));
+        System.out.println(stringBuilder.toString());
+        stringBuilder.delete(0, stringBuilder.length());
     }
 
     /**
@@ -54,21 +71,28 @@ class VocareumFormatter implements OutputFormatter {
      */
     public void saveGradingResults(Grader grader) {
         List<GradedTestResult> results = grader.getGradedTestResults();
-        StringBuilder sb = new StringBuilder();
-        if (didFailNonzeroTests(results, 2, Optional.of(sb))) {
-            results.forEach(res -> sb.append(formatGradedItem(res)).append("\n"));
+        if (didFailNonzeroTests(results, stringBuilder)) {
+            results.forEach(res -> stringBuilder.append(formatGradedItem(res)).append("\n"));
         } else {
-            sb.append("ALL TESTS PASSED!\n");
+            stringBuilder.append("ALL TESTS PASSED!\n");
         }
 
-        sb.append(String.format("Test Cases, %f\n", grader.getScore()));
-        sb.append(String.format("Code Style, %f%n\n", getCodeStyleScore(results).getScore()));
-
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(System.getenv(REPORT_FILE)))) {
-            bw.write(sb.toString());
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(System.getenv(GRADE_FILE)))) {
+            bw.write(stringBuilder.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        stringBuilder.delete(0, stringBuilder.length());
+        stringBuilder.append(String.format("Test Cases, %f\n", grader.getScore()));
+        stringBuilder.append(String.format("Code Style, %f\n", getCodeStyleScore(results).getScore()));
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(System.getenv(REPORT_FILE)))) {
+            bw.write(stringBuilder.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        stringBuilder.delete(0, stringBuilder.length());
 
     }
 
@@ -88,18 +112,13 @@ class VocareumFormatter implements OutputFormatter {
      * tests that failed.
      *
      * @param resultList    the {@code List<GradedTestResults>} received from the {@code Grader} object.
-     * @param outputType    a value indicating the output type - 1 for stdout, and 2 for a file
      * @param stringBuilder an Optional<StringBuilder> that should only be used if the {@code outputType} is 2.
      * @return true if there are more than 0 tests that failed, false otherwise.
      */
-    private boolean didFailNonzeroTests(List<GradedTestResult> resultList, int outputType,
-                                        @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-                                            Optional<StringBuilder> stringBuilder) {
+    private boolean didFailNonzeroTests(List<GradedTestResult> resultList, StringBuilder stringBuilder) {
         boolean result = resultList.stream().anyMatch(r -> !r.passed());
-        if (outputType == 1 && result) {
-            System.out.println(VocareumFormatter.FAILURE_HEADER);
-        } else if (outputType == 2 && result && stringBuilder.isPresent()) {
-            stringBuilder.get().append(VocareumFormatter.FAILURE_HEADER);
+        if (result) {
+            stringBuilder.append(VocareumFormatter.FAILURE_HEADER);
         }
         resultList.removeIf(GradedTestResult::passed);
         return result;
