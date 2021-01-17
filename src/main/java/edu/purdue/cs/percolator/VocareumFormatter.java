@@ -100,7 +100,7 @@ class VocareumFormatter implements OutputFormatter {
      * @return true if there are more than 0 tests that failed, false otherwise.
      */
     private boolean didFailNonzeroTests(List<GradedTestResult> gList) {
-        return (int) gList.stream().filter(r -> !r.passed()).count() != 0;
+        return gList.stream().anyMatch(r -> !r.passed());
     }
 
     /**
