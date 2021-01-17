@@ -9,11 +9,12 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Formats an output appropriate for Vocareum.
+ * The {@link VocareumFormatter} class saves the grading results
+ * so Vocareum can find them and assign grades.
  *
- * @author kedarabhyankar
- * @version 1.0
- * @since 1.0
+ * @author Kedar Abhyankar
+ * @version 1.2
+ * @since 1.2
  */
 class VocareumFormatter implements OutputFormatter {
 
