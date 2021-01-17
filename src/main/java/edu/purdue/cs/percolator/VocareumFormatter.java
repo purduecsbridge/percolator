@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The {@link VocareumFormatter} class saves the grading results
@@ -36,8 +37,7 @@ class VocareumFormatter implements OutputFormatter {
      */
     public void printGradingResults(Grader grader) {
         List<GradedTestResult> results = grader.getGradedTestResults();
-        if (didFailNonzeroTests(results)) {
-            System.out.println(VocareumFormatter.FAILURE_HEADER);
+        if (didFailNonzeroTests(results, 1, Optional.empty())) {
             results.forEach(res -> {
                     if (!res.passed()) {
                         System.out.println(formatGradedItem(res));
@@ -59,8 +59,7 @@ class VocareumFormatter implements OutputFormatter {
         List<GradedTestResult> results = grader.getGradedTestResults();
         StringBuilder sb = new StringBuilder();
 
-        if (didFailNonzeroTests(results)) {
-            sb.append(VocareumFormatter.FAILURE_HEADER);
+        if (didFailNonzeroTests(results, 2, Optional.of(sb))) {
             results.forEach(res -> {
                 if (!res.passed()) {
                     sb.append(formatGradedItem(res)).append("\n");
@@ -99,8 +98,17 @@ class VocareumFormatter implements OutputFormatter {
      * @param resultList the {@code List<GradedTestResults>} received from the {@code Grader} object.
      * @return true if there are more than 0 tests that failed, false otherwise.
      */
-    private boolean didFailNonzeroTests(List<GradedTestResult> resultList) {
-        return resultList.stream().anyMatch(r -> !r.passed());
+    private boolean didFailNonzeroTests(List<GradedTestResult> resultList, int outputType,
+                                        @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+                                            Optional<StringBuilder> stringBuilder) {
+        boolean result = resultList.stream().anyMatch(r -> !r.passed());
+        if (outputType == 1 && result) {
+            System.out.println(VocareumFormatter.FAILURE_HEADER);
+        } else if (outputType == 2 && result && stringBuilder.isPresent()) {
+            stringBuilder.get().append(VocareumFormatter.FAILURE_HEADER);
+        }
+
+        return result;
     }
 
     /**
