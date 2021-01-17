@@ -27,7 +27,7 @@ class VocareumFormatter implements OutputFormatter {
         "===========================================";
 
 
-   /**
+    /**
      * Prints the grading output from the {@link Grader} object
      * to standard out. Saves the grading results to
      * {@code $vocareumGradeFile}.
@@ -84,11 +84,12 @@ class VocareumFormatter implements OutputFormatter {
     /**
      * Format a graded item in the appropriate format based on the test pass/fail state.
      *
-     * @param gtr the {@code GradedTestResult} to print output for
+     * @param testCase the {@code GradedTestResult} to print output for
      * @return A formatted {@code String} detailing the test pass/fail message.
      */
-    private static String formatGradedItem(GradedTestResult gtr) {
-        return String.format("%s: %f/%f%n%s%n", gtr.getName(), gtr.getScore(), gtr.getPoints(), gtr.getOutput());
+    private static String formatGradedItem(GradedTestResult testCase) {
+        return String.format("%s: %f/%f%n%s%n", testCase.getName(), testCase.getScore(),
+            testCase.getPoints(), testCase.getOutput());
     }
 
     /**
