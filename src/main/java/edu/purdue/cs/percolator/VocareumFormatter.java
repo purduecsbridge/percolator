@@ -14,8 +14,8 @@ import java.util.Optional;
  * so Vocareum can find them and assign grades.
  *
  * @author Kedar Abhyankar
- * @version 1.2
- * @since 1.2
+ * @version 1.3
+ * @since 1.3
  */
 class VocareumFormatter implements OutputFormatter {
 
@@ -95,7 +95,9 @@ class VocareumFormatter implements OutputFormatter {
      * Returns a boolean indicative of if the {@code List<GradedTestResults>} had 1 or more
      * tests that failed.
      *
-     * @param resultList the {@code List<GradedTestResults>} received from the {@code Grader} object.
+     * @param resultList    the {@code List<GradedTestResults>} received from the {@code Grader} object.
+     * @param outputType    a value indicating the output type - 1 for stdout, and 2 for a file
+     * @param stringBuilder an Optional<StringBuilder> that should only be used if the {@code outputType} is 2.
      * @return true if there are more than 0 tests that failed, false otherwise.
      */
     private boolean didFailNonzeroTests(List<GradedTestResult> resultList, int outputType,
