@@ -96,11 +96,11 @@ class VocareumFormatter implements OutputFormatter {
      * Returns a boolean indicative of if the {@code List<GradedTestResults>} had 1 or more
      * tests that failed.
      *
-     * @param gList the {@code List<GradedTestResults>} received from the {@code Grader} object.
+     * @param resultList the {@code List<GradedTestResults>} received from the {@code Grader} object.
      * @return true if there are more than 0 tests that failed, false otherwise.
      */
-    private boolean didFailNonzeroTests(List<GradedTestResult> gList) {
-        return gList.stream().anyMatch(r -> !r.passed());
+    private boolean didFailNonzeroTests(List<GradedTestResult> resultList) {
+        return resultList.stream().anyMatch(r -> !r.passed());
     }
 
     /**
