@@ -38,12 +38,8 @@ class VocareumFormatter implements OutputFormatter {
     public void printGradingResults(Grader grader) {
         List<GradedTestResult> results = grader.getGradedTestResults();
         if (didFailNonzeroTests(results, 1, Optional.empty())) {
-            results.forEach(res -> {
-                    if (!res.passed()) {
-                        System.out.println(formatGradedItem(res));
-                    }
-                }
-            );
+            results.removeIf(GradedTestResult::passed);
+            results.forEach(res -> System.out.println(formatGradedItem(res)));
         }
 
         System.out.printf("Test Cases, %f%n\n", grader.getScore());
