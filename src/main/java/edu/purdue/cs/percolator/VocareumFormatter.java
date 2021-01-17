@@ -26,8 +26,10 @@ class VocareumFormatter implements OutputFormatter {
         "===========================================";
 
 
-    /**
-     * Print the grading report to standard output.
+   /**
+     * Prints the grading output from the {@link Grader} object
+     * to standard out. Saves the grading results to
+     * {@code $vocareumGradeFile}.
      *
      * @param grader the test case grader
      */
