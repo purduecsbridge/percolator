@@ -20,7 +20,7 @@ class VocareumFormatter implements OutputFormatter {
     /**
      * The filename used by Vocareum for outputting grade information to.
      */
-    public static final String OUT_FILE_NAME = "$vocareumGradeFile";
+    private static final String REPORT_FILE = "$vocareumGradeFile";
 
     private static final String FAILURE_HEADER = "TESTS FAILED! SEE BELOW FOR REPORT\n" +
         "===========================================";
@@ -67,7 +67,7 @@ class VocareumFormatter implements OutputFormatter {
             sb.append(String.format("Test Cases, %f\n", grader.getScore()));
             sb.append(String.format("Code Style, %f%n\n", getCodeStyleScore(results).getScore()));
 
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(OUT_FILE_NAME))) {
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(System.getenv(REPORT_FILE)))) {
                 bw.write(sb.toString());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -99,6 +99,7 @@ class VocareumFormatter implements OutputFormatter {
 
     /**
      * Get the code style score given a list of {@code GradedTestResult}.
+     *
      * @param results the {@code List<GradedTestResults>} obtained from the grader.
      * @return a {@code GradedTestResult} representing the code style score, if found, or null otherwise.
      */
