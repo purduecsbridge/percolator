@@ -3,9 +3,7 @@ package edu.purdue.cs.percolator;
 import com.github.tkutcher.jgrade.Grader;
 import com.github.tkutcher.jgrade.gradedtest.GradedTestResult;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -13,124 +11,86 @@ import java.util.List;
  * so Vocareum can find them and assign grades.
  *
  * @author Kedar Abhyankar
- * @version 1.3
- * @since 1.3
+ * @author Andrew Davis, asd@alumni.purdue.edu
+ * @version 1.2
+ * @since 1.2
  */
 class VocareumFormatter implements OutputFormatter {
 
     /**
-     * The filename used by Vocareum for outputting grade information to.
+     * The environment variable that contains the location to save
+     * the grading results to.
      */
     private final static String GRADE_FILE = "$vocareumGradeFile";
+
     /**
-     * The filename used by Vocareum for outputting report information to.
+     * The environment variable that contains the location to save
+     * the grading report to.
      */
     private final static String REPORT_FILE = "$vocareumReportFile";
-    /**
-     * The header displayed if 1 or more test cases failed.
-     */
-    private final static String FAILURE_HEADER = "TESTS FAILED! SEE BELOW FOR REPORT\n" +
-        "===========================================";
-    /**
-     * The string builder used throughout the process of printing test results.
-     */
-    private final StringBuilder stringBuilder;
 
     /**
-     * A constructor used for creating a {@code VocareumFormatter} object.
+     * The message displayed when all test cases pass.
      */
-    public VocareumFormatter() {
-        this.stringBuilder = new StringBuilder();
-    }
+    private final static String ALL_PASS_MESSAGE = "ALL TESTS PASS!!!\n";
 
     /**
-     * Prints the grading output from the {@link Grader} object
-     * to standard out. Saves the grading results to
+     * The header displayed before test output if one or more test cases failed.
+     */
+    private final static String TEST_OUTPUT_HEADER = "TESTS FAILED! SEE BELOW FOR REPORT\n" +
+        "==================================\n";
+
+    /**
+     * The message displayed after test output.
+     */
+    private final static String TEST_OUTPUT_END = "END OF TEST FAILURES\n";
+
+    /**
+     * The header displayed before code style output.
+     */
+    private final static String CODE_STYLE_HEADER = "\nCODE STYLE AUDIT" +
+        "================\n";
+
+    /**
+     * Saves the grading output from the {@link Grader} object to
+     * {@code $vocareumReportFile}. Saves the grading results to
      * {@code $vocareumGradeFile}.
      *
      * @param grader the test case grader
      */
-    public void printGradingResults(Grader grader) {
-        List<GradedTestResult> results = grader.getGradedTestResults();
-        if (didFailNonzeroTests(results, stringBuilder)) {
-            results.forEach(res -> stringBuilder.append(formatGradedItem(res)));
-        } else {
-            stringBuilder.append("ALL TESTS PASSED!");
+    public void saveGradingResults(Grader grader) {
+        PrintWriter gradeWriter;
+        PrintWriter reportWriter;
+        try {
+             gradeWriter = new PrintWriter(System.getenv(GRADE_FILE));
+             reportWriter = new PrintWriter(System.getenv(REPORT_FILE));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
-
-        stringBuilder.append(String.format("Test Cases, %f%n\n", grader.getScore()));
-        stringBuilder.append(String.format("Code Style, %f%n\n", getCodeStyleScore(results).getScore()));
-        System.out.println(stringBuilder.toString());
-        stringBuilder.delete(0, stringBuilder.length());
+        this.printGradingResults(grader, gradeWriter, reportWriter);
     }
 
     /**
-     * Save the grading output to a specific filename, determined by {@code OUT_FILENAME}.
+     * Prints the grading results to standard out. The output
+     * for the test cases is never printed or saved to disk.
      *
      * @param grader the test case grader
      */
-    public void saveGradingResults(Grader grader) {
+    public void printGradingResults(Grader grader) {
+        PrintWriter gradeWriter = new PrintWriter(System.out);
+        this.printGradingResults(grader, gradeWriter, null);
+    }
+
+    /**
+     * Prints the contents of the {@link Grader} object to the specified gradeWriter
+     * and reportWriter.
+     *
+     * @param grader the test case grader
+     * @param gradeWriter the writer used to write the grading results
+     * @param reportWriter the writer used to write the grading report
+     */
+    private void printGradingResults(Grader grader, PrintWriter gradeWriter, PrintWriter reportWriter) {
         List<GradedTestResult> results = grader.getGradedTestResults();
-        if (didFailNonzeroTests(results, stringBuilder)) {
-            results.forEach(res -> stringBuilder.append(formatGradedItem(res)).append("\n"));
-        } else {
-            stringBuilder.append("ALL TESTS PASSED!\n");
-        }
-
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(System.getenv(GRADE_FILE)))) {
-            bw.write(stringBuilder.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        stringBuilder.delete(0, stringBuilder.length());
-        stringBuilder.append(String.format("Test Cases, %f\n", grader.getScore()));
-        stringBuilder.append(String.format("Code Style, %f\n", getCodeStyleScore(results).getScore()));
-
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(System.getenv(REPORT_FILE)))) {
-            bw.write(stringBuilder.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        stringBuilder.delete(0, stringBuilder.length());
-
-    }
-
-    /**
-     * Format a graded item in the appropriate format based on the test pass/fail state.
-     *
-     * @param testCase the {@code GradedTestResult} to print output for
-     * @return A formatted {@code String} detailing the test pass/fail message.
-     */
-    private static String formatGradedItem(GradedTestResult testCase) {
-        return String.format("%s: %f/%f%n%s%n", testCase.getName(), testCase.getScore(),
-            testCase.getPoints(), testCase.getOutput());
-    }
-
-    /**
-     * Returns a boolean indicative of if the {@code List<GradedTestResults>} had 1 or more
-     * tests that failed.
-     *
-     * @param resultList    the {@code List<GradedTestResults>} received from the {@code Grader} object.
-     * @param stringBuilder an Optional<StringBuilder> that should only be used if the {@code outputType} is 2.
-     * @return true if there are more than 0 tests that failed, false otherwise.
-     */
-    private boolean didFailNonzeroTests(List<GradedTestResult> resultList, StringBuilder stringBuilder) {
-        boolean result = resultList.stream().anyMatch(r -> !r.passed());
-        if (result) {
-            stringBuilder.append(VocareumFormatter.FAILURE_HEADER);
-        }
-        resultList.removeIf(GradedTestResult::passed);
-        return result;
-    }
-
-    /**
-     * Get the code style score given a list of {@code GradedTestResult}.
-     *
-     * @param results the {@code List<GradedTestResults>} obtained from the grader.
-     * @return a {@code GradedTestResult} representing the code style score, if found, or null otherwise.
-     */
-    private GradedTestResult getCodeStyleScore(List<GradedTestResult> results) {
         GradedTestResult codeStyle = null;
         if (results.get(results.size() - 1).getName().equals(StyleChecker.TEST_RESULT_NAME)) {
             GradedTestResult result = results.get(results.size() - 1);
@@ -138,7 +98,38 @@ class VocareumFormatter implements OutputFormatter {
             results.remove(result);
         }
 
-        return codeStyle;
+        if (gradeWriter != null) {
+            double testCasesScore = results.stream()
+                .mapToDouble(GradedTestResult::getScore)
+                .sum();
+            double codeStyleScore = codeStyle != null ? codeStyle.getScore() : 0;
+
+            gradeWriter.write(String.format("Test Cases, %f\n", testCasesScore));
+            gradeWriter.write(String.format("Code Style, %f\n", codeStyleScore));
+            gradeWriter.close();
+        }
+
+        if (reportWriter != null) {
+            boolean allTestsPass = results.stream().allMatch(GradedTestResult::passed);
+            if (allTestsPass) {
+                reportWriter.write(ALL_PASS_MESSAGE);
+            } else {
+                reportWriter.write(TEST_OUTPUT_HEADER);
+                results.forEach(r -> {
+                    if (!r.passed()) {
+                        reportWriter.write(String.format("%s: %f/%f\n%s\n",
+                            r.getName(), r.getScore(), r.getPoints(), r.getOutput()));
+                    }
+                });
+                reportWriter.write(TEST_OUTPUT_END);
+            }
+
+            if (codeStyle != null) {
+                reportWriter.write(CODE_STYLE_HEADER);
+                reportWriter.write(codeStyle.getOutput());
+            }
+            reportWriter.close();
+        }
     }
 
 }
