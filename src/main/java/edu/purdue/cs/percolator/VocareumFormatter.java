@@ -87,7 +87,7 @@ class VocareumFormatter implements OutputFormatter {
      * @return A formatted {@code String} detailing the test pass/fail message.
      */
     private static String formatGradedItem(GradedTestResult gtr) {
-        return String.format("%s:%f/%f", gtr.getName(), gtr.getScore(), gtr.getPoints());
+        return String.format("%s: %f/%f%n%s%n", gtr.getName(), gtr.getScore(), gtr.getPoints(), gtr.getOutput());
     }
 
     /**
