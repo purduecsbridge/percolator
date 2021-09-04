@@ -35,14 +35,14 @@ import edu.purdue.cs.percolator.AutoGrader;
 public class TestRunner {
 
     public static void main(String[] args) {
-        String[] testSuites = {TestSuiteOne.class, TestSuiteTwo.class};
+        String[] testSuites = {HelloWorldTests.class, DebuggingTests.class};
         AutoGrader.grade(testSuites).run();
     }
 
 }
 ```
 
-You can customize the settings for the [AutoGrader](https://purduecsbridge.github.com/percolator/api/latest/edu/purdue/cs/percolator/AutoGrader.html) using its builder methods, including adding a code style checker.
+You can customize the settings for the [AutoGrader](https://purduecsbridge.github.io/percolator/api/latest/edu/purdue/cs/percolator/AutoGrader.html) using its builder methods, including adding a code style checker.
 
 ```java
 import edu.purdue.cs.percolator.AutoGrader;
@@ -67,7 +67,7 @@ public class TestRunner {
 
 The [StyleChecker](https://purduecsbridge.github.io/percolator/api/latest/edu/purdue/cs/percolator/StyleChecker.html) audits the Java source files in a given directory and enforces the rules defined in a [Checkstyle configuration](https://checkstyle.org/config.html).
 
-By default, the [AutoGrader](https://purduecsbridge.github.com/percolator/api/latest/edu/purdue/cs/percolator/AutoGrader.html) will assume you are using Gradescope. If you are using Vocareum instead, just use the `onVocareum()` method when constructing your AutoGrader.
+By default, the [AutoGrader](https://purduecsbridge.github.io/percolator/api/latest/edu/purdue/cs/percolator/AutoGrader.html) will assume you are using Gradescope. If you are using Vocareum instead, just use the `onVocareum()` method when constructing your AutoGrader.
 
 ```java
 import edu.purdue.cs.percolator.AutoGrader;
@@ -84,8 +84,10 @@ public class TestRunner {
 }
 ```
 
+Percolator also includes a number of [utilities](https://purduecsbridge.github.io/percolator/api/latest/edu/purdue/cs/percolator/util/package-summary.html) that make writing test cases easier. To see how we use these utilities in our test cases, take a look at our [lab examples](https://github.com/search?q=org%3Apurduecsbridge+example).
+
 ## Installation
-Instructions on how to add Percolator to your Maven project can be found [here](https://github.com/purduecsbridge/percolator/packages/).
+Instructions on how to add Percolator to your Maven project can be found [here](https://github.com/purduecsbridge/percolator/packages/513132).
 
 ## Contributing
 Pull requests and new issues are always welcome.
