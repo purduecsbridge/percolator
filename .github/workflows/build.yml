@@ -9,7 +9,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup JDK and Maven
+      - name: Set up JDK and Maven
         uses: actions/setup-java@v2
         with:
           java-version: '>=11.0.0'
