@@ -1,4 +1,4 @@
-name: Build and test
+name: CI
 on: pull_request
 
 jobs:
@@ -9,17 +9,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup JDK and Maven
-        uses: actions/setup-java@v1
+      - name: Set up JDK and Maven
+        uses: actions/setup-java@v2
         with:
           java-version: '>=11.0.0'
-
-      - name: Load Maven repository from cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          distribution: 'adopt'
+          cache: 'maven'
 
       - name: Build
         run: mvn compile
