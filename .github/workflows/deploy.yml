@@ -29,7 +29,7 @@ jobs:
   release_check:
     runs-on: ubuntu-latest
     outputs:
-      release: ${{ steps.label_check.outputs.result }}
+      should_release: ${{ steps.label_check.outputs.result }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -48,16 +48,25 @@ jobs:
             if (result) {
               const data = result.data
               if (data && data[0]) {
-                return data[0].labels.some(label => label.name == "non-release")
+                if (data[0].labels.some(label => label.name == "non-release")) {
+                  console.log("This push should not trigger a release.")
+                  return false
+                } else {
+                  console.log("This push should trigger a release.")
+                  return true
+                }
               }
             }
+            // If there was no pull request associated with the commit,
+            // assume that we should not release.
+            // Note: devs can always force-push to the Maven repo directly.
             return false
 
 
   deploy_package:
     runs-on: ubuntu-latest
     needs: [ get_version_number, release_check ]
-    if: needs.release_check.outputs.release == 'true'
+    if: needs.release_check.outputs.should_release == 'true'
     env:
       version_number: ${{ needs.get_version_number.outputs.version_number }}
     steps:
